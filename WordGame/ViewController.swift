@@ -60,6 +60,31 @@ class ViewController: UITableViewController {
     }
     
     func submit(_ answer: String) {
-        
+        // We're turning all answers into lowercase because all the starter words in our start.txt file are all lowercased; remember that String types are case sensitive so we do this in order ensure we're comparing fully lowercase strings with each other
+        let lowerAnswer = answer.lowercased()
+        // We're nesting our three word validation functions here, meaning that all three must return true for the usedWords.insert method (our main block of code) to actually happen
+        if isPossible(word: lowerAnswer) {
+            if isOriginal(word: lowerAnswer) {
+                if isReal(word: lowerAnswer) {
+                    usedWords.insert(answer, at: 0)
+                    // IndexPath is our rows in our table view, so here we are inserting new rows at IndexPath row 0 (to match the index location of our answer just inserted into our usedWords array at position 0) each time this function executes; remember it only executes if the three word validation functions all return true
+                    let indexPath = IndexPath(row: 0, section: 0)
+                    tableView.insertRows(at: [indexPath], with: .automatic)
+                }
+            }
+        }
     }
+    
+    func isPossible(word: String) -> Bool {
+        return true
+    }
+    
+    func isOriginal(word: String) -> Bool {
+        return true
+    }
+    
+    func isReal(word: String) -> Bool {
+        return true
+    }
+    
 }
