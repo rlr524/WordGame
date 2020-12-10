@@ -58,10 +58,40 @@ class ViewController: UITableViewController {
         ac.addAction(submitAction)
         present(ac, animated: true)
     }
+        
+    func isPossible(word: String) -> Bool {
+        // Remember that guard lets us check if the optional (title) exists and we return out of this scope if it doesn't (in this case by returning false...we could also throw an error or just do a plain return and exit the block)
+        guard var tempWord = title?.lowercased() else {
+            return false
+        }
+        for letter in word {
+            if let position = tempWord.firstIndex(of: letter) {
+                tempWord.remove(at: position)
+            } else {
+                return false
+            }
+        }
+        return true
+    }
+    
+    func isOriginal(word: String) -> Bool {
+        return !usedWords.contains(word)
+    }
+    
+    func isReal(word: String) -> Bool {
+        let checker = UITextChecker()
+        let range = NSRange(location: 0, length: word.utf16.count)
+        let misspelledRange = checker.rangeOfMisspelledWord(in: word, range: range, startingAt: 0, wrap: false, language: "en")
+        return misspelledRange.location == NSNotFound
+    }
+    
+    // FIXME: The functions don't work quite well; typing in gibberish calls the message for isPossible and typing a legit word that may be a person's name calls the message for isReal...gibberish should call isReal
     
     func submit(_ answer: String) {
         // We're turning all answers into lowercase because all the starter words in our start.txt file are all lowercased; remember that String types are case sensitive so we do this in order ensure we're comparing fully lowercase strings with each other
         let lowerAnswer = answer.lowercased()
+        let errorTitle: String
+        let errorMessage: String
         // We're nesting our three word validation functions here, meaning that all three must return true for the usedWords.insert method (our main block of code) to actually happen
         if isPossible(word: lowerAnswer) {
             if isOriginal(word: lowerAnswer) {
@@ -70,21 +100,22 @@ class ViewController: UITableViewController {
                     // IndexPath is our rows in our table view, so here we are inserting new rows at IndexPath row 0 (to match the index location of our answer just inserted into our usedWords array at position 0) each time this function executes; remember it only executes if the three word validation functions all return true
                     let indexPath = IndexPath(row: 0, section: 0)
                     tableView.insertRows(at: [indexPath], with: .automatic)
+                    return
+                } else {
+                    errorTitle = "Word not recognised"
+                    errorMessage = "You can't just make up words, you know!! (Yeah, we know, ALL words are made up 😆)"
                 }
+            } else {
+                errorTitle = "Word used already"
+                errorMessage = "Thought you'd sneak that by me, huh?"
             }
+        } else {
+            guard let title = title?.lowercased() else { return }
+            errorTitle = "Word not possible"
+            errorMessage = "You can't spell that word from \(title)"
         }
+        let ac = UIAlertController(title: errorTitle, message: errorMessage, preferredStyle: .alert)
+        ac.addAction(UIAlertAction(title: "OK", style: .default))
+        present(ac, animated: true)
     }
-    
-    func isPossible(word: String) -> Bool {
-        return true
-    }
-    
-    func isOriginal(word: String) -> Bool {
-        return true
-    }
-    
-    func isReal(word: String) -> Bool {
-        return true
-    }
-    
 }
