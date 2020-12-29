@@ -21,6 +21,7 @@ class ViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(promptForAnswer))
+        navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .play, target: self, action: #selector(startGame))
         if let startWordsURL = Bundle.main.url(forResource: "start", withExtension: "txt") {
             if let startWords = try? String(contentsOf: startWordsURL) {
                 allWords = startWords.components(separatedBy: "\n")
@@ -32,7 +33,7 @@ class ViewController: UITableViewController {
         startGame()
         }
     
-    func startGame() {
+    @objc func startGame() {
         title = allWords.randomElement()
         usedWords.removeAll(keepingCapacity: true)
         tableView.reloadData()
@@ -75,17 +76,26 @@ class ViewController: UITableViewController {
     }
     
     func isOriginal(word: String) -> Bool {
+        if word == title {
+            return false
+        }
         return !usedWords.contains(word)
     }
     
     func isReal(word: String) -> Bool {
+        let wordLength = word.utf16.count
+        if wordLength < 3 {
+            return false
+        }
         let checker = UITextChecker()
-        let range = NSRange(location: 0, length: word.utf16.count)
+        let range = NSRange(location: 0, length: wordLength)
         let misspelledRange = checker.rangeOfMisspelledWord(in: word, range: range, startingAt: 0, wrap: false, language: "en")
         return misspelledRange.location == NSNotFound
     }
     
     // FIXME: The functions don't work quite well; typing in gibberish calls the message for isPossible and typing a legit word that may be a person's name calls the message for isReal...gibberish should call isReal
+    
+    // FIXME: If we enter a three letter word in uppercase, that is accepted, we can enter the same word in lowercase and it will be accepted again
     
     func submit(_ answer: String) {
         // We're turning all answers into lowercase because all the starter words in our start.txt file are all lowercased; remember that String types are case sensitive so we do this in order ensure we're comparing fully lowercase strings with each other
@@ -103,11 +113,11 @@ class ViewController: UITableViewController {
                     return
                 } else {
                     errorTitle = "Word not recognised"
-                    errorMessage = "You can't just make up words, you know!! (Yeah, we know, ALL words are made up 😆)"
+                    errorMessage = "You can't just make up words, you know!! (Yeah, we know, ALL words are made up 😆). Your word also must be at least three letters."
                 }
             } else {
                 errorTitle = "Word used already"
-                errorMessage = "Thought you'd sneak that by me, huh?"
+                errorMessage = "Either you already used that word or you're just using the original word. Thought you'd sneak that by me, huh?"
             }
         } else {
             guard let title = title?.lowercased() else { return }
