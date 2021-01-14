@@ -12,12 +12,8 @@ class ViewController: UITableViewController {
     var allWords = [String]()
     var usedWords = [String]()
     
-    // By using try? in our startWords function we are basically
-    // turning this function into a function
-    // that returns an optional and saying call this code and
-    // if it throws an error, just send back nil instead vs try!
-    // which force unwraps the return causing a crash if it errors
-    // e.g. in this instance in case startWordsURL returns nil
+    // By using try? in our startWords function we are basically turning it into a function that returns an optional and saying call this code and if it throws an error, just send back nil instead vs try! which force unwraps the return causing a crash if it errors e.g. in this instance in case startWordsURL returns nil
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(promptForAnswer))
@@ -93,20 +89,16 @@ class ViewController: UITableViewController {
         return misspelledRange.location == NSNotFound
     }
     
-    // FIXME: The functions don't work quite well; typing in gibberish calls the message for isPossible and typing a legit word that may be a person's name calls the message for isReal...gibberish should call isReal
-    
-    // FIXME: If we enter a three letter word in uppercase, that is accepted, we can enter the same word in lowercase and it will be accepted again
-    
     func submit(_ answer: String) {
         // We're turning all answers into lowercase because all the starter words in our start.txt file are all lowercased; remember that String types are case sensitive so we do this in order ensure we're comparing fully lowercase strings with each other
         let lowerAnswer = answer.lowercased()
         let errorTitle: String
         let errorMessage: String
-        // We're nesting our three word validation functions here, meaning that all three must return true for the usedWords.insert method (our main block of code) to actually happen
+        // We're nesting our three word validation functions here, meaning that all three must return true for the usedWords.insert method (our main block of code) to actually happen. Note that it's checking if possible first, so if we type in some gibberish, it will say it's not possible even though it's also not real, as the isPossible check is the first one being done and if it fails, the function immediately returns out with the ifPossible failure message.
         if isPossible(word: lowerAnswer) {
             if isOriginal(word: lowerAnswer) {
                 if isReal(word: lowerAnswer) {
-                    usedWords.insert(answer, at: 0)
+                    usedWords.insert(lowerAnswer, at: 0)
                     // IndexPath is our rows in our table view, so here we are inserting new rows at IndexPath row 0 (to match the index location of our answer just inserted into our usedWords array at position 0) each time this function executes; remember it only executes if the three word validation functions all return true
                     let indexPath = IndexPath(row: 0, section: 0)
                     tableView.insertRows(at: [indexPath], with: .automatic)
